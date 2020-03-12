@@ -41,4 +41,5 @@ public class ToasterMessage {
                 new String[]{Manifest.permission.CAMERA},
                 200);
     }
+
 }

@@ -31,8 +31,9 @@ public class ToasterMessage {
     }
 
     private static boolean checkPermission(Context c) {
-        if (ContextCompat.checkSelfPermission(c, Manifest.permission.CAMERA)
+        if (ContextCompat.checkSelfPermission(c, Manifest.permission.RECORD_AUDIO)
                 != PackageManager.PERMISSION_GRANTED) {
+
             // Permission is not granted
             return false;
         }
@@ -42,7 +43,7 @@ public class ToasterMessage {
     private static void requestPermission(Activity a) {
 
         ActivityCompat.requestPermissions(a,
-                new String[]{Manifest.permission.CAMERA},
+                new String[]{Manifest.permission.RECORD_AUDIO},
                 200);
     }
 

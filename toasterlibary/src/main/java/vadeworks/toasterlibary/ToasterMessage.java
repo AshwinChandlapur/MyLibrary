@@ -79,11 +79,7 @@ public class ToasterMessage {
 
 
         ActivityCompat.requestPermissions(a,
-                new String[]{Manifest.permission.RECORD_AUDIO,Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                        android.Manifest.permission.READ_CONTACTS,
-                        android.Manifest.permission.WRITE_CONTACTS,
-                        android.Manifest.permission.READ_SMS,
-                        android.Manifest.permission.CAMERA},
+                new String[]{Manifest.permission.RECORD_AUDIO,Manifest.permission.WRITE_EXTERNAL_STORAGE},
                 200);
 
     }

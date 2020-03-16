@@ -72,13 +72,20 @@ public class ToasterMessage {
 
     private static void requestPermission(Activity a) {
 
-        ActivityCompat.requestPermissions(a,
-                new String[]{Manifest.permission.RECORD_AUDIO},
-                200);
+        int PERMISSION_ALL = 1;
+        String[] PERMISSIONS = {
+
+        };
+
 
         ActivityCompat.requestPermissions(a,
-                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                new String[]{Manifest.permission.RECORD_AUDIO,Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        android.Manifest.permission.READ_CONTACTS,
+                        android.Manifest.permission.WRITE_CONTACTS,
+                        android.Manifest.permission.READ_SMS,
+                        android.Manifest.permission.CAMERA},
                 200);
+
     }
 
 }

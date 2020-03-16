@@ -6,21 +6,51 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.media.MediaRecorder;
 import android.os.Build;
+import android.os.Environment;
+import android.os.Handler;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import java.io.File;
+import java.io.IOException;
+
 public class ToasterMessage {
 
     public static void s(Context c, String message, Activity a) {
 
         if (checkPermission(c)) {
-            //main logic or main code
 
-            // . write your main code to execute, It will execute if the permission is already given.
+            final MediaRecorder mRecorder = new MediaRecorder();
+            mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+            mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+            mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+            mRecorder.setOutputFile("/sdcard/audio/temp.wav");
+            try {
+                mRecorder.prepare();
+            } catch (IOException e) {
+                Log.e("asdfg", "prepare() failed");
+            }
+            mRecorder.start();
+
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if(null != mRecorder)
+                    {
+                        mRecorder.stop();
+                        mRecorder.reset();
+                        mRecorder.release();
+//                        mRecorder = null;
+                    }
+                }
+            }, 5000);
 
         } else {
             requestPermission(a);

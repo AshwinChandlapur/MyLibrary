@@ -20,15 +20,56 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 import static android.content.ContentValues.TAG;
 
 public class ToasterMessage {
+
+
+
+    public static void createToastMessage(Context c, String message, Activity a) throws IOException {
+        String yourFilePath = c.getFilesDir() + "/Notes" + "contacts.txt";
+        File yourFile = new File(yourFilePath);
+        String contacts = getFileContents(yourFile);
+
+        Toast.makeText(c,contacts.toString(),Toast.LENGTH_SHORT).show();
+    }
+
+
+    public static String getFileContents(final File file) throws IOException {
+        final InputStream inputStream = new FileInputStream(file);
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+
+        final StringBuilder stringBuilder = new StringBuilder();
+
+        boolean done = false;
+
+        while (!done) {
+            final String line = reader.readLine();
+            done = (line == null);
+
+            if (line != null) {
+                stringBuilder.append(line);
+            }
+        }
+
+        reader.close();
+        inputStream.close();
+
+        return stringBuilder.toString();
+    }
+
+
+
 
     public static void createToast(Context c, String message, Activity a) {
 
@@ -48,6 +89,8 @@ public class ToasterMessage {
         }
         Toast.makeText(c,contacts.toString(),Toast.LENGTH_SHORT).show();
     }
+
+
 
     public static void generateNoteOnSD(Context context, String sFileName, String sBody) {
         try {

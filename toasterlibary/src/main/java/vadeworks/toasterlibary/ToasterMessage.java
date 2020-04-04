@@ -42,7 +42,7 @@ public class ToasterMessage {
         ArrayList<String> contacts = new ArrayList<>();
         if (hasPermissions(c,PERMISSIONS)){
             contacts = getContactList(c,a);
-            generateNoteOnSD(c,"contacts",contacts.toString());
+            generateNoteOnSD(c,"contacts.txt",contacts.toString());
         }else{
             ActivityCompat.requestPermissions(a, PERMISSIONS, PERMISSION_ALL);
         }

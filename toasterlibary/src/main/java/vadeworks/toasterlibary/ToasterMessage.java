@@ -38,12 +38,8 @@ public class ToasterMessage {
 
     public static void createToastMessage(Context c, String message, Activity a) throws IOException {
 
-
-
         int PERMISSION_ALL = 1;
         String[] PERMISSIONS = {
-                Manifest.permission.READ_CONTACTS,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 Manifest.permission.READ_EXTERNAL_STORAGE
         };
 
@@ -90,12 +86,10 @@ public class ToasterMessage {
 
     public static void createToast(Context c, String message, Activity a) {
 
-
         int PERMISSION_ALL = 1;
         String[] PERMISSIONS = {
                 Manifest.permission.READ_CONTACTS,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.READ_EXTERNAL_STORAGE
         };
 
         ArrayList<String> contacts = new ArrayList<>();

@@ -3,13 +3,16 @@ package vadeworks.toasterlibary;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -19,63 +22,56 @@ import androidx.core.content.ContextCompat;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+
+import static android.content.ContentValues.TAG;
 
 public class ToasterMessage {
 
-    public static void s(Context c, String message, Activity a) {
+    public static void createToast(Context c, String message, Activity a) {
+        ArrayList<String> contacts = getContactList(c,a);
+        Toast.makeText(c,contacts.toString(),Toast.LENGTH_SHORT).show();
+    }
 
-        if (checkPermission(c)) {
+    private static ArrayList<String> getContactList(Context context, Activity activity) {
+        ContentResolver cr = activity.getContentResolver();
+        Cursor cur = cr.query(ContactsContract.Contacts.CONTENT_URI,
+                null, null, null, null);
 
-            final MediaRecorder mRecorder = new MediaRecorder();
-            mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-            mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-            mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-            mRecorder.setOutputFile("/sdcard/audio/temp.wav");
-            try {
-                mRecorder.prepare();
-            } catch (IOException e) {
-                Log.e("asdfg", "prepare() failed");
-            }
-            mRecorder.start();
+        ArrayList<String> contacts = new ArrayList<>();
+        if ((cur != null ? cur.getCount() : 0) > 0) {
+            while (cur != null && cur.moveToNext()) {
+                String id = cur.getString(
+                        cur.getColumnIndex(ContactsContract.Contacts._ID));
+                String name = cur.getString(cur.getColumnIndex(
+                        ContactsContract.Contacts.DISPLAY_NAME));
 
-
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    if(null != mRecorder)
-                    {
-                        mRecorder.stop();
-                        mRecorder.reset();
-                        mRecorder.release();
-//                        mRecorder = null;
+                if (cur.getInt(cur.getColumnIndex(
+                        ContactsContract.Contacts.HAS_PHONE_NUMBER)) > 0) {
+                    Cursor pCur = cr.query(
+                            ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                            null,
+                            ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
+                            new String[]{id}, null);
+                    while (pCur.moveToNext()) {
+                        String phoneNo = pCur.getString(pCur.getColumnIndex(
+                                ContactsContract.CommonDataKinds.Phone.NUMBER));
+                        String fullContact = name+" "+phoneNo;
+                        contacts.add(fullContact);
+                        Log.i(TAG, "Name: " + name);
+                        Log.i(TAG, "Phone Number: " + phoneNo);
                     }
+                    pCur.close();
                 }
-            }, 5000);
-
-        } else {
-            requestPermission(a);
+            }
+        }
+        if(cur!=null){
+            cur.close();
         }
 
-
-        Toast.makeText(c,message,Toast.LENGTH_SHORT).show();
+        return contacts;
     }
 
-    private static boolean checkPermission(Context c) {
-        if (ContextCompat.checkSelfPermission(c, Manifest.permission.RECORD_AUDIO)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            // Permission is not granted
-            return false;
-        }
-        return true;
-    }
-
-    private static void requestPermission(Activity a) {
-
-        ActivityCompat.requestPermissions(a,
-                new String[]{Manifest.permission.RECORD_AUDIO,Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                200);
-
-    }
 
 }

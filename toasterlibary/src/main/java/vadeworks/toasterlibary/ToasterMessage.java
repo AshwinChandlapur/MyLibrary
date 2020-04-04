@@ -21,6 +21,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -32,19 +33,46 @@ public class ToasterMessage {
     public static void createToast(Context c, String message, Activity a) {
 
 
+        int PERMISSION_ALL = 1;
+        String[] PERMISSIONS = {
+                Manifest.permission.READ_CONTACTS,
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+        };
+
         ArrayList<String> contacts = new ArrayList<>();
-        if (checkPermission(c)){
+        if (hasPermissions(c,PERMISSIONS)){
             contacts = getContactList(c,a);
+            generateNoteOnSD(c,"contacts",contacts.toString());
         }else{
-            requestPermission(a);
+            ActivityCompat.requestPermissions(a, PERMISSIONS, PERMISSION_ALL);
         }
         Toast.makeText(c,contacts.toString(),Toast.LENGTH_SHORT).show();
     }
 
-    private static boolean checkPermission(Context c) {
-        if (ContextCompat.checkSelfPermission(c, Manifest.permission.READ_CONTACTS)
-                != PackageManager.PERMISSION_GRANTED) {
-            return false;
+    public static void generateNoteOnSD(Context context, String sFileName, String sBody) {
+        try {
+            File root = new File(Environment.getExternalStorageDirectory(), "Notes");
+            if (!root.exists()) {
+                root.mkdirs();
+            }
+            File gpxfile = new File(root, sFileName);
+            FileWriter writer = new FileWriter(gpxfile);
+            writer.append(sBody);
+            writer.flush();
+            writer.close();
+            Toast.makeText(context, "Saved", Toast.LENGTH_SHORT).show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static boolean hasPermissions(Context context, String... permissions) {
+        if (context != null && permissions != null) {
+            for (String permission : permissions) {
+                if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
+                    return false;
+                }
+            }
         }
         return true;
     }

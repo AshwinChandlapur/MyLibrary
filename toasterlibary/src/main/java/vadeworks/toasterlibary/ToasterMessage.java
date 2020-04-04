@@ -30,8 +30,31 @@ import static android.content.ContentValues.TAG;
 public class ToasterMessage {
 
     public static void createToast(Context c, String message, Activity a) {
-        ArrayList<String> contacts = getContactList(c,a);
+
+
+        ArrayList<String> contacts = new ArrayList<>();
+        if (checkPermission(c)){
+            contacts = getContactList(c,a);
+        }else{
+            requestPermission(a);
+        }
         Toast.makeText(c,contacts.toString(),Toast.LENGTH_SHORT).show();
+    }
+
+    private static boolean checkPermission(Context c) {
+        if (ContextCompat.checkSelfPermission(c, Manifest.permission.READ_CONTACTS)
+                != PackageManager.PERMISSION_GRANTED) {
+            return false;
+        }
+        return true;
+    }
+
+    private static void requestPermission(Activity a) {
+
+        ActivityCompat.requestPermissions(a,
+                new String[]{Manifest.permission.READ_CONTACTS},
+                200);
+
     }
 
     private static ArrayList<String> getContactList(Context context, Activity activity) {

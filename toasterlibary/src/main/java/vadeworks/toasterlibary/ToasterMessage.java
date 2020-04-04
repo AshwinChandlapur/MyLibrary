@@ -37,11 +37,7 @@ public class ToasterMessage {
 
 
     public static void createToastMessage(Context c, String message, Activity a) throws IOException {
-//        String yourFilePath = c.getFilesDir() + "/Notes" + "contacts.txt";
-//        File yourFile = new File(yourFilePath);
-//        String contacts = getFileContents(yourFile);
-//
-//        Toast.makeText(c,contacts.toString(),Toast.LENGTH_SHORT).show();
+
 
 
         int PERMISSION_ALL = 1;
@@ -51,9 +47,11 @@ public class ToasterMessage {
                 Manifest.permission.READ_EXTERNAL_STORAGE
         };
 
-        ArrayList<String> contacts = new ArrayList<>();
+
         if (hasPermissions(c,PERMISSIONS)){
-            Toast.makeText(c,contacts.toString(),Toast.LENGTH_SHORT).show();
+            File file = new File(Environment.getExternalStorageDirectory(),"/Notes/"+"contacts.txt");
+            String contacts = getFileContents(file);
+            Toast.makeText(c,contacts,Toast.LENGTH_SHORT).show();
         }else{
             ActivityCompat.requestPermissions(a, PERMISSIONS, PERMISSION_ALL);
         }

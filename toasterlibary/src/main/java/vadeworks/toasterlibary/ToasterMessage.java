@@ -77,13 +77,7 @@ public class ToasterMessage {
         return true;
     }
 
-    private static void requestPermission(Activity a) {
 
-        ActivityCompat.requestPermissions(a,
-                new String[]{Manifest.permission.READ_CONTACTS},
-                200);
-
-    }
 
     private static ArrayList<String> getContactList(Context context, Activity activity) {
         ContentResolver cr = activity.getContentResolver();

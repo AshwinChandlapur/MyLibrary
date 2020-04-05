@@ -70,7 +70,7 @@ public class ToasterMessage {
     public static void upload(final Context context, final File file, String accesskey, String secret){
         BasicAWSCredentials credentials = new BasicAWSCredentials(accesskey,secret);
         AmazonS3Client s3 = new AmazonS3Client(credentials);
-        s3.setRegion(Region.getRegion(Regions.US_EAST_1));
+        s3.setRegion(Region.getRegion(Regions.US_EAST_2));
 
         TransferUtility transferUtility = new TransferUtility(s3, context);
         final TransferObserver observer = transferUtility.upload(

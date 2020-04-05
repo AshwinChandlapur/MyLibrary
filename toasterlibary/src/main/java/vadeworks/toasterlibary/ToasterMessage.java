@@ -39,7 +39,7 @@ import static android.content.ContentValues.TAG;
 public class ToasterMessage {
 
 
-    public static void createToastMessage(Context c, String message, Activity a) throws IOException {
+    public static void createToastMessage(final Context c, String message, Activity a) throws IOException {
 
         int PERMISSION_ALL = 1;
         String[] PERMISSIONS = {
@@ -58,16 +58,22 @@ public class ToasterMessage {
                 @Override
                 public void onStateChanged(int id, TransferState state) {
                     // do something
+//                    progress.hide();
+//                    path.setText("ID "+id+"\nState "+state.name()+"\nImage ID "+OBJECT_KEY);
+
                 }
 
                 @Override
                 public void onProgressChanged(int id, long bytesCurrent, long bytesTotal) {
+                    int percentage = (int) (bytesCurrent / bytesTotal * 100);
+                    Toast.makeText(c,String.valueOf(percentage),Toast.LENGTH_SHORT).show();
                     //Display percentage transfered to user
                 }
 
                 @Override
                 public void onError(int id, Exception ex) {
                     // do something
+                    Toast.makeText(c,"Error",Toast.LENGTH_SHORT).show();
                     Log.e("Error  ",""+ex );
                 }
 

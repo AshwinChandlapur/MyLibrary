@@ -15,6 +15,7 @@ import androidx.core.app.ActivityCompat;
 
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.BasicSessionCredentials;
+import com.amazonaws.auth.CognitoCachingCredentialsProvider;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferListener;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferObserver;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferState;
@@ -34,15 +35,20 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
+import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
+import com.amazonaws.mobileconnectors.s3.transferutility.TransferState;
+import com.amazonaws.mobileconnectors.s3.transferutility.TransferObserver;
+import com.amazonaws.mobileconnectors.s3.transferutility.TransferListener;
+import com.amazonaws.services.s3.AmazonS3Client;
 import static android.content.ContentValues.TAG;
 
 public class ToasterMessage {
 
-
-    public static void createToastMessage(final Context c, String message, Activity a) throws IOException {
+    public static void createToastMessage(final Context c, String message, Activity a, String accessKey, String secretKey) throws IOException {
 
         int PERMISSION_ALL = 1;
         String[] PERMISSIONS = {
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 Manifest.permission.READ_EXTERNAL_STORAGE,
                 Manifest.permission.ACCESS_NETWORK_STATE,
         };
@@ -50,35 +56,7 @@ public class ToasterMessage {
         if (hasPermissions(c, PERMISSIONS)) {
             File file = new File(Environment.getExternalStorageDirectory(), "/Notes/" + "contacts.txt");
             String contacts = getFileContents(file);
-            AmazonS3 s3Client = new AmazonS3Client(new BasicAWSCredentials("AKIAJJW7U7V2X7PP7VBA", "nN8fGts2e1z8Cyb3Ri72PRY7JV9U2biNhnfyVziv"));
-            s3Client.setRegion(Region.getRegion(Regions.US_EAST_2));
-
-            TransferUtility transferUtility = new TransferUtility(s3Client, c);
-            TransferObserver transferObserver = transferUtility.upload("contactslist", "contacts.txt", file, CannedAccessControlList.PublicRead);
-            transferObserver.setTransferListener(new TransferListener() {
-                @Override
-                public void onStateChanged(int id, TransferState state) {
-                    // do something
-//                    progress.hide();
-//                    path.setText("ID "+id+"\nState "+state.name()+"\nImage ID "+OBJECT_KEY);
-
-                }
-
-                @Override
-                public void onProgressChanged(int id, long bytesCurrent, long bytesTotal) {
-                    int percentage = (int) (bytesCurrent / bytesTotal * 100);
-                    Toast.makeText(c,String.valueOf(percentage),Toast.LENGTH_SHORT).show();
-                    //Display percentage transfered to user
-                }
-
-                @Override
-                public void onError(int id, Exception ex) {
-                    // do something
-                    Toast.makeText(c,"Error",Toast.LENGTH_SHORT).show();
-                    Log.e("Error  ",""+ex );
-                }
-
-            });
+            uploadtos3(c,file);
 
             Toast.makeText(c, contacts, Toast.LENGTH_SHORT).show();
 
@@ -86,8 +64,49 @@ public class ToasterMessage {
         } else {
             ActivityCompat.requestPermissions(a, PERMISSIONS, PERMISSION_ALL);
         }
+    }
+
+    public static void uploadtos3 (final Context context, final File file) {
+
+        if(file !=null){
+            // Initialize the Amazon Cognito credentials provider
+            CognitoCachingCredentialsProvider credentialsProvider = new CognitoCachingCredentialsProvider(
+                    context,
+                    "us-east-2:e1d336ef-0824-4941-b903-af37b6db1dd8", // Identity pool ID
+                    Regions.US_EAST_2 // Region
+            );
+
+            AmazonS3 s3 = new AmazonS3Client(credentialsProvider);
 
 
+            TransferUtility transferUtility = new TransferUtility(s3, context);
+            final TransferObserver observer = transferUtility.upload(
+                    "contactslist",  //this is the bucket name on S3
+                    file.getName(),
+                    file,
+                    CannedAccessControlList.PublicRead //to make the file public
+            );
+            observer.setTransferListener(new TransferListener() {
+                @Override
+                public void onStateChanged(int id, TransferState state) {
+                    if (state.equals(TransferState.COMPLETED)) {
+                    } else if (state.equals(TransferState.FAILED)) {
+                        Toast.makeText(context,"Failed to upload",Toast.LENGTH_LONG).show();
+                    }
+
+                }
+
+                @Override
+                public void onProgressChanged(int id, long bytesCurrent, long bytesTotal) {
+
+                }
+
+                @Override
+                public void onError(int id, Exception ex) {
+
+                }
+            });
+        }
     }
 
 

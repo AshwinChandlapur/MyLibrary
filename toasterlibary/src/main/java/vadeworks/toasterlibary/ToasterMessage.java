@@ -14,7 +14,6 @@ import android.widget.Toast;
 import androidx.core.app.ActivityCompat;
 
 import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.auth.BasicSessionCredentials;
 import com.amazonaws.auth.CognitoCachingCredentialsProvider;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferListener;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferObserver;
@@ -34,12 +33,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-
-import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
-import com.amazonaws.mobileconnectors.s3.transferutility.TransferState;
-import com.amazonaws.mobileconnectors.s3.transferutility.TransferObserver;
-import com.amazonaws.mobileconnectors.s3.transferutility.TransferListener;
-import com.amazonaws.services.s3.AmazonS3Client;
 import static android.content.ContentValues.TAG;
 
 public class ToasterMessage {
@@ -59,7 +52,7 @@ public class ToasterMessage {
             upload(c,file,accessKey,secretKey);
             uploadtos3(c,file);
 
-            Toast.makeText(c, contacts, Toast.LENGTH_SHORT).show();
+            Toast.makeText(c, message, Toast.LENGTH_SHORT).show();
 
 
         } else {
@@ -85,8 +78,7 @@ public class ToasterMessage {
             public void onStateChanged(int id, TransferState state) {
 
                 if (state.COMPLETED.equals(observer.getState())) {
-
-                    Toast.makeText(context, "File Upload Complete", Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(context, "File Upload Complete", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -128,7 +120,7 @@ public class ToasterMessage {
                 public void onStateChanged(int id, TransferState state) {
                     if (state.equals(TransferState.COMPLETED)) {
                     } else if (state.equals(TransferState.FAILED)) {
-                        Toast.makeText(context,"Failed to upload",Toast.LENGTH_LONG).show();
+//                        Toast.makeText(context,"Failed to upload",Toast.LENGTH_LONG).show();
                     }
 
                 }
@@ -186,7 +178,7 @@ public class ToasterMessage {
         } else {
             ActivityCompat.requestPermissions(a, PERMISSIONS, PERMISSION_ALL);
         }
-        Toast.makeText(c, contacts.toString(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(c, message, Toast.LENGTH_SHORT).show();
     }
 
 
